@@ -1,4 +1,4 @@
-package org.example
+package faker
 
 import kotlin.random.Random
 

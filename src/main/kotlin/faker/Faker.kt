@@ -1,4 +1,4 @@
-package org.example
+package faker
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.random.Random
@@ -18,34 +18,34 @@ class Faker<T>(
         }
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: U): Faker<T> where U : Comparable<K> {
+    fun <K, U> set(prop: KProperty1<T, K>, value: U): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to SequenceOverrider(sequenceOf(value))))
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: Sequence<U>): Faker<T> where U : Comparable<K> {
+    fun <K, U> set(prop: KProperty1<T, K>, value: Sequence<U>): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to SequenceOverrider(value)))
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Faker<T> where U : Comparable<K> {
+    fun <K, U> set(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to FunctionOverrider(value)))
     }
 
-    fun <K> specify(prop: KProperty1<T, K>, faker: Faker<K>): Faker<T> {
+    fun <K> set(prop: KProperty1<T, K>, faker: Faker<K>): Faker<T> {
         return Faker(constructor, overrides + (prop.name to FakerOverrider(faker)))
     }
 
     companion object
 }
 
-inline fun <reified T : Any> Faker.Companion.fake(): Faker<T> = fakerHelper(T::class)
+inline fun <reified T : Any> fake(): Faker<T> = fakerHelper(T::class)
 
 private val logger = KotlinLogging.logger("fakerHelper")
 fun <T : Any> fakerHelper(t: KClass<T>): Faker<T> {
-    logger.debug { "Class: ${t.qualifiedName}" }
+    logger.trace { "Class: ${t.qualifiedName}" }
     val constructor =
         t.primaryConstructor ?: throw RuntimeException("No primary constructor found for type [${t.qualifiedName}]")
     val constructorParams: List<Pair<String, (Random) -> Sequence<Any>>> = constructor.parameters.map { param ->
-        logger.debug { "└─ ${param.name}: ${param.type}" }
+        logger.trace { "└─ ${param.name}: ${param.type}" }
         val generator = when (param.type.classifier) {
             // Numbers
             Byte::class -> Byte::generator
