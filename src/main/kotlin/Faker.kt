@@ -2,8 +2,7 @@ package org.example
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.random.Random
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
+import kotlin.reflect.*
 import kotlin.reflect.full.primaryConstructor
 
 class Faker<T>(
@@ -19,29 +18,34 @@ class Faker<T>(
         }
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: U): Faker<T> where U: Comparable<K> {
+    fun <K, U> specify(prop: KProperty1<T, K>, value: U): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to SequenceOverrider(sequenceOf(value))))
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: Sequence<U>): Faker<T> where U: Comparable<K> {
+    fun <K, U> specify(prop: KProperty1<T, K>, value: Sequence<U>): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to SequenceOverrider(value)))
     }
 
-    fun <K, U> specify(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Faker<T> where U: Comparable<K> {
+    fun <K, U> specify(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Faker<T> where U : Comparable<K> {
         return Faker(constructor, overrides + (prop.name to FunctionOverrider(value)))
+    }
+
+    fun <K> specify(prop: KProperty1<T, K>, faker: Faker<K>): Faker<T> {
+        return Faker(constructor, overrides + (prop.name to FakerOverrider(faker)))
     }
 
     companion object
 }
 
-inline fun <reified T : Any> Faker.Companion.fake(): Faker<T> = fakerHelper( T::class )
+inline fun <reified T : Any> Faker.Companion.fake(): Faker<T> = fakerHelper(T::class)
 
-private val logger = KotlinLogging.logger ("fakerHelper")
-fun <T: Any> fakerHelper(t: KClass<T>): Faker<T> {
+private val logger = KotlinLogging.logger("fakerHelper")
+fun <T : Any> fakerHelper(t: KClass<T>): Faker<T> {
     logger.debug { "Class: ${t.qualifiedName}" }
-    val constructor = t.primaryConstructor ?: throw RuntimeException("No primary constructor found for type [${t.qualifiedName}]")
+    val constructor =
+        t.primaryConstructor ?: throw RuntimeException("No primary constructor found for type [${t.qualifiedName}]")
     val constructorParams: List<Pair<String, (Random) -> Sequence<Any>>> = constructor.parameters.map { param ->
-        logger.debug { "└─ ${param.name}: ${param.type}"}
+        logger.debug { "└─ ${param.name}: ${param.type}" }
         val generator = when (param.type.classifier) {
             // Numbers
             Byte::class -> Byte::generator
@@ -67,8 +71,12 @@ fun <T: Any> fakerHelper(t: KClass<T>): Faker<T> {
             // Others are complex types and must be handled recursively
 //            else -> throw RuntimeException("Unhandled type $it")
             else -> {
-                throw NotImplementedError("Unhandled type ${param.type}")
-//                { random -> fakerHelper(param::class).generate(random) }
+                { random ->
+                    fakerHelper(
+                        param.type.classifier as? KClass<*>
+                            ?: throw RuntimeException("Parameter is not a KClass, should probably not end up here?")
+                    ).generate(random)
+                }
             }
         }
         Pair(param.name!!, generator)
@@ -82,6 +90,7 @@ fun <T: Any> fakerHelper(t: KClass<T>): Faker<T> {
                         when (override) {
                             is SequenceOverrider<*> -> override.sequence.first()
                             is FunctionOverrider<*> -> override.function(random).first()
+                            is FakerOverrider<*> -> override.faker.generate(random).first()
                         }
                     } ?: it.second(random).first()
                 }.toTypedArray()
@@ -93,3 +102,5 @@ fun <T: Any> fakerHelper(t: KClass<T>): Faker<T> {
 sealed class Overrider
 data class SequenceOverrider<T>(val sequence: Sequence<T>) : Overrider()
 data class FunctionOverrider<T>(val function: (Random) -> Sequence<T>) : Overrider()
+
+data class FakerOverrider<T>(val faker: Faker<T>): Overrider()
