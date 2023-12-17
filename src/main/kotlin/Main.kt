@@ -28,5 +28,5 @@ fun main() {
                 .set(Email::email, "a@b.com")
         )
 
-    println(people.generate(random).take(10).toList())
+    println(people.generate(random).take(10).toList().joinToString("\n"))
 }
