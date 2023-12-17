@@ -8,7 +8,10 @@ import kotlin.random.Random
 data class Person(
     val name: String,
     val age: Int,
-    val email: Email
+    val email: Email,
+    val numbers: List<Int>,
+    val strings: List<String>,
+    val map: Map<String, Int>,
 )
 
 data class Email(

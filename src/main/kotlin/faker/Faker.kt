@@ -66,10 +66,23 @@ fun <T : Any> fakerHelper(t: KClass<T>): Faker<T> {
             // Boolean
             Boolean::class -> Boolean::generator
 
-            // TODO: handle arrays
+            List::class -> {
+                val collectionContentType = param.type.arguments.first().type!!.classifier
+                val generator = basicTypes[collectionContentType]!!
+                ({ random -> listOf(generator(random).take(random.nextInt(0, 10)).toList()).asSequence() })
+            }
+
+            Map::class -> {
+                val t1 = param.type.arguments[0].type!!.classifier
+                val g1 = basicTypes[t1]!!
+                val t2 = param.type.arguments[1].type!!.classifier
+                val g2 = basicTypes[t2]!!
+                ({ random ->
+                    sequenceOf(g1(random).zip(g2(random)).take(random.nextInt(0, 10)).toMap())
+                })
+            }
 
             // Others are complex types and must be handled recursively
-//            else -> throw RuntimeException("Unhandled type $it")
             else -> {
                 { random ->
                     fakerHelper(
@@ -99,8 +112,28 @@ fun <T : Any> fakerHelper(t: KClass<T>): Faker<T> {
     )
 }
 
+val basicTypes: Map<KClassifier, (Random) -> Sequence<*>> = mapOf(
+    Byte::class to Byte::generator,
+    UByte::class to UByte::generator,
+    Short::class to Short.generator(),
+    UShort::class to UShort.generator(),
+    Int::class to Int.generator(),
+    UInt::class to UInt.generator(),
+    Long::class to Long.generator(),
+    ULong::class to ULong.generator(),
+    Float::class to Float.generator(),
+    Double::class to Double.generator(),
+
+    // String types
+    String::class to String.generator(),
+    Char::class to Char.generator(),
+
+    // Boolean
+    Boolean::class to Boolean::generator
+)
+
 sealed class Overrider
 data class SequenceOverrider<T>(val sequence: Sequence<T>) : Overrider()
 data class FunctionOverrider<T>(val function: (Random) -> Sequence<T>) : Overrider()
 
-data class FakerOverrider<T>(val faker: Faker<T>): Overrider()
+data class FakerOverrider<T>(val faker: Faker<T>) : Overrider()
