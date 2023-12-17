@@ -83,7 +83,7 @@ fun Double.Companion.generator(): (random: Random) -> Sequence<Double> = { rando
 fun String.Companion.generator(
     minLength: Int = 0,
     maxLength: Int = 20,
-    characterSet: List<Char> = allowedCharacters
+    characterSet: List<Char> = letters
 ): (random: Random) -> Sequence<String> =
     { random ->
         sequence {
@@ -96,11 +96,11 @@ fun String.Companion.generator(
         }
     }
 
-fun Char.Companion.generator(characterSet: List<Char> = allowedCharacters): (random: Random) -> Sequence<Char> =
+fun Char.Companion.generator(characterSet: List<Char> = letters): (random: Random) -> Sequence<Char> =
     { random ->
         sequence {
             while (true) {
-                yield(allowedCharacters.random(random))
+                yield(lettersAndNumbers.random(random))
             }
         }
     }
@@ -178,4 +178,5 @@ private val lastNames = listOf(
     "Henriksen"
 )
 
-private val allowedCharacters: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+private val letters: List<Char> = ('A'..'Z') + ('a'..'z')
+private val lettersAndNumbers: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
