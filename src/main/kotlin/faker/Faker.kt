@@ -94,7 +94,7 @@ fun makeBuiltInInstance(cls: KClass<*>, type: KType): Generator? = when (cls) {
     Boolean::class -> Boolean::generator
 
     List::class -> makeList(type)
-
+    Set::class -> makeSet(type)
     Map::class -> makeMap(type)
 
     else -> null
@@ -106,6 +106,15 @@ fun makeList(type: KType): (Random) -> Sequence<*> {
     val generator = fakerHelper(collectionContentType)
     return { random ->
         listOf(generator.generate(random).take(random.nextInt(0, 10)).toList()).asSequence()
+    }
+}
+
+fun makeSet(type: KType): (Random) -> Sequence<*> {
+    logger.trace { "Creating set instance: $type" }
+    val collectionContentType = type.arguments.first().type!!
+    val generator = fakerHelper(collectionContentType)
+    return { random ->
+        listOf(generator.generate(random).take(random.nextInt(0, 10)).toSet()).asSequence()
     }
 }
 

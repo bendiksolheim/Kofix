@@ -12,6 +12,7 @@ data class Person(
     val numbers: List<Int>,
     val strings: List<String>,
     val map: Map<String, Int>,
+    val set: Set<Email>
 )
 
 data class Email(
