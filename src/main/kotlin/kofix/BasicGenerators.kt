@@ -89,9 +89,7 @@ fun String.Companion.generator(
         sequence {
             while (true) {
                 val length = random.nextInt(minLength, maxLength + 1)
-                yield((minLength..length)
-                    .map { characterSet.random(random) }
-                    .joinToString(""))
+                yield(CharArray(length) { characterSet.random(random) }.joinToString(""))
             }
         }
     }
