@@ -38,7 +38,13 @@ val tenPeople = fixture<Person>()
 - Restricting/specifying values is done with the `Class::parameter` syntax. Because of this, constructor params that are **not** vars can’t be restricted. They will still receive random values based on their type.
 - There is no peeking at parameter names or such to guess the semantic content. This will probably not happen either.
 
-## A note about Java
+## What about Java?
 
 So, this library is made with Kotlin in mind. Will it work with Java? I don’t know, to be honest. I haven’t written Java in ~5 years.
 If you have any clue, and want to improve the Java API without compromising the Kotlin API, give me a shout!
+
+## Inspiration
+
+- https://github.com/AutoFixture/AutoFixture 
+- https://blog.kotlin-academy.com/creating-a-random-instance-of-any-class-in-kotlin-b6168655b64a
+- https://www.bekk.christmas/post/2023/08/test-data-generators-in-kotlin
