@@ -63,7 +63,7 @@ class BasicTypesTests {
         val s = fixture<String>().generate(Random).first()
 
         assertIs<String>(s)
-        assertTrue { s.length <= 20}
+        assertTrue("[$s] is ${s.length} long") { s.length <= 20}
     }
 
     @Test
