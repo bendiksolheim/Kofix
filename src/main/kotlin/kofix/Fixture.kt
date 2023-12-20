@@ -1,13 +1,13 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package faker
+package kofix
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.random.Random
 import kotlin.reflect.*
 import kotlin.reflect.full.primaryConstructor
 
-class Faker<T>(
+class Fixture<T>(
     val constructor: (random: Random, overrides: Map<String, Overrider>) -> T,
     private val overrides: Map<String, Overrider> = mapOf()
 ) {
@@ -18,40 +18,40 @@ class Faker<T>(
         }
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: U): Faker<T> where U : Comparable<K> {
-        return Faker(constructor, overrides + (prop.name to FunctionOverrider { sequenceOf(value) }))
+    fun <K, U> set(prop: KProperty1<T, K>, value: U): Fixture<T> where U : Comparable<K> {
+        return Fixture(constructor, overrides + (prop.name to FunctionOverrider { sequenceOf(value) }))
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: Sequence<U>): Faker<T> where U : Comparable<K> {
-        return Faker(constructor, overrides + (prop.name to FunctionOverrider { value }))
+    fun <K, U> set(prop: KProperty1<T, K>, value: Sequence<U>): Fixture<T> where U : Comparable<K> {
+        return Fixture(constructor, overrides + (prop.name to FunctionOverrider { value }))
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Faker<T> where U : Comparable<K> {
-        return Faker(constructor, overrides + (prop.name to FunctionOverrider(value)))
+    fun <K, U> set(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Fixture<T> where U : Comparable<K> {
+        return Fixture(constructor, overrides + (prop.name to FunctionOverrider(value)))
     }
 
-    fun <K> set(prop: KProperty1<T, K>, faker: Faker<K>): Faker<T> {
-        return Faker(constructor, overrides + (prop.name to FakerOverrider(faker)))
+    fun <K> set(prop: KProperty1<T, K>, fixture: Fixture<K>): Fixture<T> {
+        return Fixture(constructor, overrides + (prop.name to FixtureOverrider(fixture)))
     }
 
     companion object
 }
 
-inline fun <reified T : Any> fake(): Faker<T> = fakerHelper(T::class, typeOf<T>())
-fun fakerHelper(t: KType): Faker<*> = fakerHelper(t.classifier as KClass<*>, t)
-fun <T : Any> fakerHelper(t: KClass<T>, type: KType): Faker<T> {
+inline fun <reified T : Any> fixture(): Fixture<T> = fixtureHelper(T::class, typeOf<T>())
+fun fixtureHelper(t: KType): Fixture<*> = fixtureHelper(t.classifier as KClass<*>, t)
+fun <T : Any> fixtureHelper(t: KClass<T>, type: KType): Fixture<T> {
     logger.trace { "Class: ${t.simpleName}" }
 
     val builtIn = makeBuiltInInstance(t, type)
     if (builtIn != null) {
-        return Faker({ random, _ ->
+        return Fixture({ random, _ ->
             builtIn(random).first() as T
         })
     }
 
     if (t.java.isEnum) {
         val enumValues = Class.forName(t.qualifiedName).enumConstants
-        return Faker({ random, _ ->
+        return Fixture({ random, _ ->
             enumValues.random(random) as T
         })
     }
@@ -60,17 +60,17 @@ fun <T : Any> fakerHelper(t: KClass<T>, type: KType): Faker<T> {
     val constructor = primaryConstructorOrThrow(t)
     val constructorParamGenerators = constructor.parameters.map { param ->
         logger.trace { "└─ ${param.name}: ${param.type}" }
-        val generator = fakerHelper(param.type)
+        val generator = fixtureHelper(param.type)
         Pair(param.name!!, generator)
     }
 
-    return Faker(
+    return Fixture(
         { random: Random, overrides: Map<String, Overrider> ->
             val params = constructorParamGenerators.map {
                 overrides[it.first]?.let { override ->
                     when (override) {
                         is FunctionOverrider<*> -> override.function(random).first()
-                        is FakerOverrider<*> -> override.faker.generate(random).first()
+                        is FixtureOverrider<*> -> override.fixture.generate(random).first()
                     }
                 } ?: it.second.generate(random).first()
             }.toTypedArray()
@@ -112,7 +112,7 @@ fun makeBuiltInInstance(cls: KClass<*>, type: KType): Generator? = when (cls) {
 fun makeList(type: KType): (Random) -> Sequence<*> {
     logger.trace { "Creating list instance: $type" }
     val collectionContentType = type.arguments.first().type!!
-    val generator = fakerHelper(collectionContentType)
+    val generator = fixtureHelper(collectionContentType)
     return { random ->
         listOf(generator.generate(random).take(random.nextInt(0, 10)).toList()).asSequence()
     }
@@ -121,7 +121,7 @@ fun makeList(type: KType): (Random) -> Sequence<*> {
 fun makeSet(type: KType): (Random) -> Sequence<*> {
     logger.trace { "Creating set instance: $type" }
     val collectionContentType = type.arguments.first().type!!
-    val generator = fakerHelper(collectionContentType)
+    val generator = fixtureHelper(collectionContentType)
     return { random ->
         listOf(generator.generate(random).take(random.nextInt(0, 10)).toSet()).asSequence()
     }
@@ -129,8 +129,8 @@ fun makeSet(type: KType): (Random) -> Sequence<*> {
 
 fun makeMap(type: KType): (Random) -> Sequence<*> {
     logger.trace { "Creating map instance" }
-    val keys = fakerHelper(type.arguments[0].type!!)
-    val values = fakerHelper(type.arguments[1].type!!)
+    val keys = fixtureHelper(type.arguments[0].type!!)
+    val values = fixtureHelper(type.arguments[1].type!!)
     return ({ random ->
         sequenceOf(keys.generate(random).zip(values.generate(random)).take(random.nextInt(0, 10)).toMap())
     })
@@ -138,8 +138,8 @@ fun makeMap(type: KType): (Random) -> Sequence<*> {
 
 sealed class Overrider
 data class FunctionOverrider<T>(val function: (Random) -> Sequence<T>) : Overrider()
-data class FakerOverrider<T>(val faker: Faker<T>) : Overrider()
+data class FixtureOverrider<T>(val fixture: Fixture<T>) : Overrider()
 
-private val logger = KotlinLogging.logger("fakerHelper")
+private val logger = KotlinLogging.logger("fixture")
 
 typealias Generator = (Random) -> Sequence<*>

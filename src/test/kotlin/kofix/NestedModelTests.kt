@@ -1,7 +1,7 @@
-package faker
+package kofix
 
-import faker.model.NestedModel
-import faker.model.SimpleModel
+import kofix.model.NestedModel
+import kofix.model.SimpleModel
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.random.Random
@@ -12,13 +12,13 @@ class NestedModelTests {
 
     @Test
     fun `Can generate NestedModel without overrides`() {
-        assertDoesNotThrow { fake<NestedModel>().generate(Random).first() }
+        assertDoesNotThrow { fixture<NestedModel>().generate(Random).first() }
     }
 
     @RepeatedTest(10)
     fun `Can generate NestedModel and override nested values`() {
-        val model = assertDoesNotThrow { fake<NestedModel>()
-            .set(NestedModel::simple, fake<SimpleModel>()
+        val model = assertDoesNotThrow { fixture<NestedModel>()
+            .set(NestedModel::simple, fixture<SimpleModel>()
                 .set(SimpleModel::age, Int.generator(0, 1))
                 .set(SimpleModel::name, String.generator(1, 1, listOf('a')))
             ).generate(Random).first()

@@ -1,4 +1,4 @@
-package faker.model
+package kofix.model
 
 class SimpleModel(
     val name: String,

@@ -6,25 +6,25 @@ Use it for whatever, but the whole reason for the existence of this library is t
 
 ## Usage
 
-If you just want a fixture and don’t care about any values, simply call the `fake` function
+If you just want a fixture and don’t care about any values, simply call the `fixture` function
 
 ```kotlin
-import faker.fake
+import kofix.fixture
 
 data class Person(val name: String, val age: UInt)
 
-val tenPeople = fake<Person>().take(10).toList()
+val tenPeople = fixture<Person>().take(10).toList()
 ```
 
 If you want to restrict values to a more sensible value in your domain, you can override them with a custom value generator. Let’s restrict `age` to between 0 and 120:
 
 ```kotlin
-import faker.fake
-import faker.generator
+import kofix.fixture
+import kofix.generator
 
 data class Person(val name: String, val age: UInt)
 
-val tenPeople = fake<Person>()
+val tenPeople = fixture<Person>()
     .set(Person::age, Int::generator(0, 120))
     .take(10)
     .toList()

@@ -1,6 +1,6 @@
-package faker.generators
+package kofix.generators
 
-import faker.generator
+import kofix.generator
 import org.junit.jupiter.api.RepeatedTest
 import kotlin.random.Random
 import kotlin.test.assertEquals

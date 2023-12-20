@@ -1,6 +1,6 @@
-package faker
+package kofix
 
-import faker.model.SimpleModel
+import kofix.model.SimpleModel
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -12,12 +12,12 @@ class SimpleModelTests {
 
     @Test
     fun `Can generate SimpleModel without overrides`() {
-        assertDoesNotThrow { fake<SimpleModel>().generate(Random).first() }
+        assertDoesNotThrow { fixture<SimpleModel>().generate(Random).first() }
     }
 
     @RepeatedTest(10)
     fun `Can generate SimpleModel with overrides`() {
-        val model = assertDoesNotThrow { fake<SimpleModel>()
+        val model = assertDoesNotThrow { fixture<SimpleModel>()
             .set(SimpleModel::age, Int.generator(0, 10))
             .set(SimpleModel::name, String.generator(1, 1, listOf('a')))
             .generate(Random).first()

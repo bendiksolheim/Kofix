@@ -1,8 +1,8 @@
 package org.example
 
-import faker.fake
-import faker.generator
-import faker.name
+import kofix.fixture
+import kofix.generator
+import kofix.name
 import kotlin.random.Random
 
 data class Person(
@@ -21,11 +21,11 @@ data class Email(
 
 fun main() {
     val random = Random.Default
-    val people = fake<Person>()
+    val people = fixture<Person>()
         .set(Person::name, String::name)
         .set(Person::age, Int.generator(1, 100))
         .set(
-            Person::email, fake<Email>()
+            Person::email, fixture<Email>()
                 .set(Email::email, "a@b.com")
         )
 

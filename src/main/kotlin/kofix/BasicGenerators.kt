@@ -1,4 +1,4 @@
-package faker
+package kofix
 
 import kotlin.random.Random
 
