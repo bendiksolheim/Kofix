@@ -98,7 +98,7 @@ fun Char.Companion.generator(characterSet: List<Char> = letters): (random: Rando
     { random ->
         sequence {
             while (true) {
-                yield(lettersAndNumbers.random(random))
+                yield(characterSet.random(random))
             }
         }
     }
@@ -177,4 +177,3 @@ private val lastNames = listOf(
 )
 
 private val letters: List<Char> = ('A'..'Z') + ('a'..'z')
-private val lettersAndNumbers: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
