@@ -1,5 +1,7 @@
 # Kofix
 
+*As you can see (with no installation instructions, and so on), this is kind of an experiment as of now. Don’t use it.*
+
 A Kotlin library to create instances of classes filled with random values. Think [Autofixture](https://github.com/AutoFixture/AutoFixture), but for Kotlin.
 
 Use it for whatever, but the whole reason for the existence of this library is to minimize the arrange/setup phase of your unit tests without requiring changes to your production code.
