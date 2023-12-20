@@ -41,12 +41,21 @@ inline fun <reified T : Any> fake(): Faker<T> = fakerHelper(T::class, typeOf<T>(
 fun fakerHelper(t: KType): Faker<*> = fakerHelper(t.classifier as KClass<*>, t)
 fun <T : Any> fakerHelper(t: KClass<T>, type: KType): Faker<T> {
     logger.trace { "Class: ${t.simpleName}" }
+
     val builtIn = makeBuiltInInstance(t, type)
     if (builtIn != null) {
         return Faker({ random, _ ->
             builtIn(random).first() as T
         })
     }
+
+    if (t.java.isEnum) {
+        val enumValues = Class.forName(t.qualifiedName).enumConstants
+        return Faker({ random, _ ->
+            enumValues.random(random) as T
+        })
+    }
+
     logger.trace { "Parameter is complex" }
     val constructor = primaryConstructorOrThrow(t)
     val constructorParamGenerators = constructor.parameters.map { param ->
