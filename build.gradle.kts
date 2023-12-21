@@ -3,14 +3,16 @@ plugins {
     `maven-publish`
 }
 
-group = "kofix"
-version = "0.0.1"
-
 repositories {
     mavenCentral()
 }
 
 publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+        }
+    }
     repositories {
         maven {
             name = "GitHubPackages"
