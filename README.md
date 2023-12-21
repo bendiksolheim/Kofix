@@ -27,7 +27,7 @@ import kofix.generator
 data class Person(val name: String, val age: UInt)
 
 val tenPeople = fixture<Person>()
-    .set(Person::age, Int::generator(0, 120))
+    .with(Person::age, Int::generator(0, 120))
     .take(10)
     .toList()
 ```

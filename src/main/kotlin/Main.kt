@@ -22,11 +22,11 @@ data class Email(
 fun main() {
     val random = Random.Default
     val people = fixture<Person>()
-        .set(Person::name, String::name)
-        .set(Person::age, Int.generator(1, 100))
-        .set(
+        .with(Person::name, String::name)
+        .with(Person::age, Int.generator(1, 100))
+        .with(
             Person::email, fixture<Email>()
-                .set(Email::email, "a@b.com")
+                .with(Email::email, "a@b.com")
         )
 
     println(people.generate(random).take(10).toList().joinToString("\n"))

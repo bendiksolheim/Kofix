@@ -18,8 +18,8 @@ class SimpleModelTests {
     @RepeatedTest(10)
     fun `Can generate SimpleModel with overrides`() {
         val model = assertDoesNotThrow { fixture<SimpleModel>()
-            .set(SimpleModel::age, Int.generator(0, 10))
-            .set(SimpleModel::name, String.generator(1, 1, listOf('a')))
+            .with(SimpleModel::age, Int.generator(0, 10))
+            .with(SimpleModel::name, String.generator(1, 1, listOf('a')))
             .generate(Random).first()
         }
 

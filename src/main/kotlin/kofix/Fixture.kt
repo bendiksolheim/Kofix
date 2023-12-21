@@ -18,19 +18,19 @@ class Fixture<T>(
         }
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: U): Fixture<T> where U : Comparable<K> {
+    fun <K, U> with(prop: KProperty1<T, K>, value: U): Fixture<T> where U : Comparable<K> {
         return Fixture(constructor, overrides + (prop.name to FunctionOverrider { sequenceOf(value) }))
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: Sequence<U>): Fixture<T> where U : Comparable<K> {
+    fun <K, U> with(prop: KProperty1<T, K>, value: Sequence<U>): Fixture<T> where U : Comparable<K> {
         return Fixture(constructor, overrides + (prop.name to FunctionOverrider { value }))
     }
 
-    fun <K, U> set(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Fixture<T> where U : Comparable<K> {
+    fun <K, U> with(prop: KProperty1<T, K>, value: (Random) -> Sequence<U>): Fixture<T> where U : Comparable<K> {
         return Fixture(constructor, overrides + (prop.name to FunctionOverrider(value)))
     }
 
-    fun <K> set(prop: KProperty1<T, K>, fixture: Fixture<K>): Fixture<T> {
+    fun <K> with(prop: KProperty1<T, K>, fixture: Fixture<K>): Fixture<T> {
         return Fixture(constructor, overrides + (prop.name to FixtureOverrider(fixture)))
     }
 
