@@ -22,7 +22,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
-          echo "New version: ${NEW_VERSION}"
+          echo "New version: ${GITHUB_REF_NAME}"
           echo "Github username: ${GITHUB_ACTOR}"
-          gradle -Pversion=${NEW_VERSION} publish
+          gradle -Pversion=${GITHUB_REF_NAME} publish
